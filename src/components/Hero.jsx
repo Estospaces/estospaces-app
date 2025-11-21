@@ -76,10 +76,14 @@ const Hero = () => {
                             <div className="flex items-center border-b border-gray-200 pb-2">
                                 <MapPin size={18} className="text-primary mr-2" />
                                 <select className="w-full outline-none text-secondary bg-transparent cursor-pointer">
-                                    <option value="">All Locations</option>
-                                    <option value="miami">Miami</option>
-                                    <option value="ny">New York</option>
-                                    <option value="la">Los Angeles</option>
+                                    <option value="">All Countries</option>
+                                    <option value="india">India</option>
+                                    <option value="usa">United States</option>
+                                    <option value="uk">United Kingdom</option>
+                                    <option value="canada">Canada</option>
+                                    <option value="australia">Australia</option>
+                                    <option value="uae">United Arab Emirates</option>
+                                    <option value="singapore">Singapore</option>
                                 </select>
                             </div>
                         </div>
