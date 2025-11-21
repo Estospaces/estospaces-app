@@ -1,5 +1,6 @@
 import React from 'react';
 import { Eye, Shield, Zap, Bell, Award } from 'lucide-react';
+import modernApartment from '../assets/modern-apartment.png';
 
 const WhyJoin = () => {
     const benefits = [
@@ -26,44 +27,70 @@ const WhyJoin = () => {
     ];
 
     return (
-        <section id="join-waitlist" className="py-20 bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 text-white">
-            <div className="container mx-auto px-4">
-                <div className="max-w-4xl mx-auto">
-                    {/* Section Header */}
-                    <div className="text-center mb-12">
-                        <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                            Join the Waitlist
+        <section id="join-waitlist" className="relative py-32 overflow-hidden min-h-[800px] flex items-center">
+            {/* Parallax Background - Fixed Attachment for Robust Visibility */}
+            <div
+                className="absolute inset-0 z-0"
+                style={{
+                    backgroundImage: `url(${modernApartment})`,
+                    backgroundAttachment: 'fixed',
+                    backgroundPosition: 'center',
+                    backgroundSize: 'cover'
+                }}
+            ></div>
+
+            {/* Dark Gradient Overlay with Noise Texture for Realism */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/70 to-black/90 z-10"></div>
+
+            {/* Optional: Radial Gradient for Spotlight Effect */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)] z-10 pointer-events-none"></div>
+
+            <div className="container mx-auto px-4 relative z-20">
+                <div className="max-w-5xl mx-auto text-center">
+
+                    {/* Header with 3D Text Shadow */}
+                    <div className="mb-20 animate-fade-in-up">
+                        <h2 className="text-5xl md:text-7xl font-bold mb-6 text-white tracking-tight drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]">
+                            Join the <span className="text-primary relative inline-block">
+                                Waitlist
+                                <span className="absolute bottom-0 left-0 w-full h-2 bg-primary/30 blur-sm"></span>
+                            </span>
                         </h2>
-                        <p className="text-xl text-white text-opacity-90">
-                            Be among the first to experience the future of real estate.
+                        <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto font-light drop-shadow-md">
+                            Be among the first to experience the future of real estate with exclusive access to virtual tours and verified listings.
                         </p>
                     </div>
 
-                    {/* Benefits List */}
-                    <div className="bg-white bg-opacity-10 backdrop-blur-md rounded-lg p-8 md:p-12 mb-8">
-                        <ul className="space-y-6">
-                            {benefits.map((benefit, index) => (
-                                <li key={index} className="flex items-start gap-4">
-                                    <div className="flex-shrink-0 w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                                        {benefit.icon}
-                                    </div>
-                                    <span className="text-lg pt-1.5">
-                                        {benefit.text}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
+                    {/* Glassmorphism Benefits Grid with 3D Hover Effects */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 perspective-1000">
+                        {benefits.slice(0, 3).map((benefit, index) => (
+                            <div
+                                key={index}
+                                className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-3xl hover:bg-white/10 transition-all duration-500 group hover:-translate-y-4 hover:shadow-[0_20px_40px_-15px_rgba(249,115,22,0.3)] relative overflow-hidden"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                <div className="w-16 h-16 bg-gradient-to-br from-primary to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                                    {React.cloneElement(benefit.icon, { className: "text-white w-8 h-8" })}
+                                </div>
+                                <p className="text-xl font-medium text-white relative z-10">
+                                    {benefit.text}
+                                </p>
+                            </div>
+                        ))}
                     </div>
 
-                    {/* CTA */}
-                    <div className="text-center">
-                        <button className="bg-white text-orange-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-opacity-90 transition-all shadow-xl hover:shadow-2xl transform hover:scale-105">
+                    {/* CTA Area with Glowing Effect */}
+                    <div className="animate-fade-in-up delay-200 relative z-30">
+                        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full transform scale-150 opacity-0 hover:opacity-100 transition-opacity duration-700"></div>
+                        <button className="relative bg-gradient-to-r from-primary to-orange-600 text-white px-12 py-6 rounded-full font-bold text-xl hover:shadow-[0_0_40px_rgba(249,115,22,0.6)] transform hover:scale-105 transition-all duration-300 flex items-center gap-3 mx-auto border border-white/20">
                             Reserve Your Spot
+                            <Zap size={24} className="fill-current animate-pulse" />
                         </button>
-                        <p className="mt-4 text-white text-opacity-80 text-sm">
-                            Join early • No commitment required
+                        <p className="mt-8 text-gray-400 text-sm tracking-[0.2em] uppercase font-medium">
+                            Limited Spots Available • No Commitment
                         </p>
                     </div>
+
                 </div>
             </div>
         </section>

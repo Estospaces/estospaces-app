@@ -20,14 +20,14 @@ const Navbar = () => {
     }, []);
 
     return (
-        <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'}`}>
+        <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-primary shadow-md py-2' : 'bg-transparent py-4'}`}>
             <div className="container mx-auto px-4">
                 <div className="flex justify-between items-center">
                     {/* Logo */}
                     <div className="flex items-center">
                         <a href="/" className="text-2xl font-bold text-secondary flex items-center gap-2">
-                            <img src={logoIcon} alt="Estospaces Logo" className="h-8 w-auto object-contain" />
-                            <span className={`${isScrolled ? 'text-secondary' : 'text-white'} font-bold text-xl`}>Estospaces</span>
+                            <img src={logoIcon} alt="Estospaces Logo" className={`h-8 w-auto object-contain transition-all duration-300 ${isScrolled ? 'brightness-0 invert' : ''}`} />
+                            <span className="text-white font-bold text-xl">Estospaces</span>
                         </a>
                     </div>
 
@@ -37,7 +37,7 @@ const Navbar = () => {
                             <a
                                 key={item}
                                 href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
-                                className={`text-sm font-medium hover:text-primary transition-colors ${isScrolled ? 'text-secondary' : 'text-white'}`}
+                                className={`text-sm font-medium transition-colors ${isScrolled ? 'text-white hover:text-secondary' : 'text-white hover:text-primary'}`}
                             >
                                 {item}
                             </a>
@@ -46,15 +46,18 @@ const Navbar = () => {
 
                     {/* Actions */}
                     <div className="hidden md:flex items-center space-x-4">
-                        <button className="bg-primary text-white px-6 py-2 rounded-full font-medium hover:bg-opacity-90 transition-all flex items-center gap-2">
+                        <button className={`px-6 py-2 rounded-full font-medium border-2 transition-all ${isScrolled ? 'border-white text-white hover:bg-white hover:text-primary' : 'border-white text-white hover:bg-white hover:text-secondary'}`}>
+                            Login
+                        </button>
+                        <button className={`px-6 py-2 rounded-full font-medium transition-all flex items-center gap-2 shadow-lg hover:shadow-xl ${isScrolled ? 'bg-white text-primary hover:bg-gray-100' : 'bg-primary text-white hover:bg-opacity-90'}`}>
                             <User size={18} />
-                            Login/SignUp
+                            Sign Up
                         </button>
                     </div>
 
                     {/* Mobile Menu Button */}
                     <button
-                        className="md:hidden text-primary"
+                        className={`md:hidden ${isScrolled ? 'text-white' : 'text-primary'}`}
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                     >
                         {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -74,9 +77,12 @@ const Navbar = () => {
                                 {item}
                             </a>
                         ))}
+                        <button className="w-full px-6 py-2 rounded-full font-medium border-2 border-secondary text-secondary hover:bg-secondary hover:text-white transition-all">
+                            Login
+                        </button>
                         <button className="bg-primary text-white px-6 py-2 rounded-full font-medium w-full flex items-center justify-center gap-2">
                             <User size={18} />
-                            Login/SignUp
+                            Sign Up
                         </button>
                     </div>
                 )}

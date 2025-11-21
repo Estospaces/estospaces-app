@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
+import useParallax from '../hooks/useParallax';
 import { Search, MapPin, Home, DollarSign, Settings } from 'lucide-react';
 import backgroundVideo from '../assets/landing-page-baground-video.mp4';
 
 const Hero = () => {
     const [activeTab, setActiveTab] = useState('buy');
+    const offset = useParallax(0.5);
 
     return (
-        <div className="relative h-screen min-h-[600px] flex items-center justify-center">
+        <div className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden">
             {/* Background Video */}
-            <div className="absolute inset-0 z-0">
+            <div
+                className="absolute inset-0 z-0 will-change-transform"
+                style={{ transform: `translateY(${offset}px)` }}
+            >
                 <video
                     autoPlay
                     loop
