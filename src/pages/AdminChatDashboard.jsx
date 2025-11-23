@@ -32,6 +32,10 @@ const AdminChatDashboard = () => {
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [isTicketDetailsOpen, setIsTicketDetailsOpen] = useState(false);
 
+    // Ticket filters
+    const [ticketStatusFilter, setTicketStatusFilter] = useState('all'); // 'all' | 'open' | 'closed'
+    const [ticketPriorityFilter, setTicketPriorityFilter] = useState('all'); // 'all' | 'low' | 'medium' | 'high'
+
     const handleLogout = async () => {
         if (supabase) {
             await supabase.auth.signOut();
@@ -95,6 +99,19 @@ const AdminChatDashboard = () => {
         .map(c => c.ticket)
         .filter(Boolean)
         .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    // Apply filters to tickets
+    const filteredTickets = allTickets.filter(ticket => {
+        // Filter by status
+        if (ticketStatusFilter !== 'all' && ticket.status !== ticketStatusFilter) {
+            return false;
+        }
+        // Filter by priority
+        if (ticketPriorityFilter !== 'all' && ticket.priority !== ticketPriorityFilter) {
+            return false;
+        }
+        return true;
+    });
 
     return (
         <div className="h-screen flex flex-col bg-gray-100">
@@ -173,10 +190,43 @@ const AdminChatDashboard = () => {
 
                     <div className="flex-1 overflow-y-auto">
                         {activeTab === 'tickets' ? (
-                            <TicketsList
-                                tickets={allTickets}
-                                onSelectTicket={handleSelectTicket}
-                            />
+                            <>
+                                {/* Ticket Filters */}
+                                <div className="p-4 border-b border-gray-200 bg-gray-50 space-y-3">
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
+                                        <select
+                                            value={ticketStatusFilter}
+                                            onChange={(e) => setTicketStatusFilter(e.target.value)}
+                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                                        >
+                                            <option value="all">All Status</option>
+                                            <option value="open">Open</option>
+                                            <option value="closed">Closed</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-600 mb-1">Priority</label>
+                                        <select
+                                            value={ticketPriorityFilter}
+                                            onChange={(e) => setTicketPriorityFilter(e.target.value)}
+                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                                        >
+                                            <option value="all">All Priorities</option>
+                                            <option value="low">Low</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="high">High</option>
+                                        </select>
+                                    </div>
+                                    <div className="text-xs text-gray-500 pt-1">
+                                        Showing {filteredTickets.length} of {allTickets.length} tickets
+                                    </div>
+                                </div>
+                                <TicketsList
+                                    tickets={filteredTickets}
+                                    onSelectTicket={handleSelectTicket}
+                                />
+                            </>
                         ) : (
                             <ConversationList
                                 conversations={filteredConversations}
