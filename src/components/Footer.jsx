@@ -94,9 +94,9 @@ const Footer = () => {
                             © 2025 Estospaces. All rights reserved.
                         </p>
                         <div className="flex gap-6 text-sm">
-                            <a href="#" className="text-gray-400 hover:text-primary transition-colors">Privacy Policy</a>
-                            <a href="#" className="text-gray-400 hover:text-primary transition-colors">Terms of Service</a>
-                            <a href="#" className="text-gray-400 hover:text-primary transition-colors">Cookie Policy</a>
+                            <a href="/privacy" className="text-gray-400 hover:text-primary transition-colors">Privacy Policy</a>
+                            <a href="/terms" className="text-gray-400 hover:text-primary transition-colors">Terms of Service</a>
+                            <a href="/cookies" className="text-gray-400 hover:text-primary transition-colors">Cookie Policy</a>
                         </div>
                     </div>
                 </div>
