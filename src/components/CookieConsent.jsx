@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Cookie } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { Cookie } from 'lucide-react';
 
 const CookieConsent = () => {
     const [showBanner, setShowBanner] = useState(false);
@@ -16,19 +17,21 @@ const CookieConsent = () => {
         }
     }, []);
 
-    const initializeTracking = () => {
+    const initializeTracking = async () => {
         // Store acceptance timestamp
         localStorage.setItem('cookieConsentDate', new Date().toISOString());
 
         // Track basic analytics
         if (typeof window !== 'undefined') {
-            // Store user session data
+            // Collect user session data
             const sessionData = {
                 timestamp: new Date().toISOString(),
                 userAgent: navigator.userAgent,
                 language: navigator.language,
                 screenResolution: `${window.screen.width}x${window.screen.height}`,
                 referrer: document.referrer || 'direct',
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                platform: navigator.platform,
             };
 
             localStorage.setItem('userSession', JSON.stringify(sessionData));
@@ -40,6 +43,27 @@ const CookieConsent = () => {
                 timestamp: new Date().toISOString(),
             });
             localStorage.setItem('pageViews', JSON.stringify(pageViews));
+
+            // Send analytics data to Supabase
+            try {
+                if (supabase) {
+                    await supabase.from('analytics_events').insert([{
+                        event_type: 'cookie_accepted',
+                        user_agent: sessionData.userAgent,
+                        language: sessionData.language,
+                        screen_resolution: sessionData.screenResolution,
+                        referrer: sessionData.referrer,
+                        timezone: sessionData.timezone,
+                        platform: sessionData.platform,
+                        page_url: window.location.pathname,
+                    }]);
+                    console.log('✅ Analytics data sent to Supabase');
+                }
+            } catch (error) {
+                console.log('⚠️ Analytics table not set up yet:', error.message);
+                console.log('Run supabase_analytics_setup.sql to create the table');
+                // Data is still stored locally even if backend fails
+            }
         }
     };
 
