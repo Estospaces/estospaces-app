@@ -23,8 +23,40 @@ const CookieConsent = () => {
 
         // Track basic analytics
         if (typeof window !== 'undefined') {
+            // Generate or retrieve session ID
+            let sessionId = sessionStorage.getItem('sessionId');
+            if (!sessionId) {
+                sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                sessionStorage.setItem('sessionId', sessionId);
+            }
+
+            // Detect device type
+            const getDeviceType = () => {
+                const ua = navigator.userAgent;
+                if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+                    return 'tablet';
+                }
+                if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+                    return 'mobile';
+                }
+                return 'desktop';
+            };
+
+            // Detect browser
+            const getBrowser = () => {
+                const ua = navigator.userAgent;
+                if (ua.indexOf('Firefox') > -1) return 'Firefox';
+                if (ua.indexOf('Opera') > -1 || ua.indexOf('OPR') > -1) return 'Opera';
+                if (ua.indexOf('Trident') > -1) return 'IE';
+                if (ua.indexOf('Edge') > -1) return 'Edge';
+                if (ua.indexOf('Chrome') > -1) return 'Chrome';
+                if (ua.indexOf('Safari') > -1) return 'Safari';
+                return 'Unknown';
+            };
+
             // Collect user session data
             const sessionData = {
+                sessionId,
                 timestamp: new Date().toISOString(),
                 userAgent: navigator.userAgent,
                 language: navigator.language,
@@ -32,6 +64,8 @@ const CookieConsent = () => {
                 referrer: document.referrer || 'direct',
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                 platform: navigator.platform,
+                deviceType: getDeviceType(),
+                browser: getBrowser(),
             };
 
             localStorage.setItem('userSession', JSON.stringify(sessionData));
@@ -41,6 +75,7 @@ const CookieConsent = () => {
             pageViews.push({
                 url: window.location.pathname,
                 timestamp: new Date().toISOString(),
+                sessionId,
             });
             localStorage.setItem('pageViews', JSON.stringify(pageViews));
 
@@ -49,19 +84,22 @@ const CookieConsent = () => {
                 if (supabase) {
                     await supabase.from('analytics_events').insert([{
                         event_type: 'cookie_accepted',
+                        session_id: sessionId,
                         user_agent: sessionData.userAgent,
                         language: sessionData.language,
                         screen_resolution: sessionData.screenResolution,
                         referrer: sessionData.referrer,
                         timezone: sessionData.timezone,
                         platform: sessionData.platform,
+                        device_type: sessionData.deviceType,
+                        browser: sessionData.browser,
                         page_url: window.location.pathname,
                     }]);
                     console.log('✅ Analytics data sent to Supabase');
                 }
             } catch (error) {
                 console.log('⚠️ Analytics table not set up yet:', error.message);
-                console.log('Run supabase_analytics_setup.sql to create the table');
+                console.log('Run supabase_analytics_enhanced.sql to update the table');
                 // Data is still stored locally even if backend fails
             }
         }

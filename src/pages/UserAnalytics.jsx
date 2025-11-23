@@ -1,23 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { LogOut, Users, Eye, Globe, TrendingUp, Calendar, RefreshCw, MessageSquare } from 'lucide-react';
+import { LogOut, Users, Eye, Globe, TrendingUp, RefreshCw, MessageSquare, Monitor, Smartphone, Tablet, Clock, BarChart3 } from 'lucide-react';
 
 const UserAnalytics = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [dateRange, setDateRange] = useState('7'); // days
     const [analytics, setAnalytics] = useState({
         totalUsers: 0,
+        totalSessions: 0,
         totalPageViews: 0,
+        avgSessionDuration: 0,
+        bounceRate: 0,
         topPages: [],
         demographics: [],
         referrers: [],
+        deviceBreakdown: [],
+        browserBreakdown: [],
         recentEvents: [],
     });
 
     useEffect(() => {
         loadAnalytics();
-    }, []);
+    }, [dateRange]);
 
     const loadAnalytics = async () => {
         setLoading(true);
@@ -27,26 +33,38 @@ const UserAnalytics = () => {
                 return;
             }
 
-            // Get total users (unique user agents)
+            // Calculate date filter
+            const daysAgo = new Date();
+            daysAgo.setDate(daysAgo.getDate() - parseInt(dateRange));
+
+            // Get events within date range
             const { data: allEvents } = await supabase
                 .from('analytics_events')
                 .select('*')
+                .gte('created_at', daysAgo.toISOString())
                 .order('created_at', { ascending: false });
 
-            if (!allEvents) {
+            if (!allEvents || allEvents.length === 0) {
                 setAnalytics({
                     totalUsers: 0,
+                    totalSessions: 0,
                     totalPageViews: 0,
+                    avgSessionDuration: 0,
+                    bounceRate: 0,
                     topPages: [],
                     demographics: [],
                     referrers: [],
+                    deviceBreakdown: [],
+                    browserBreakdown: [],
                     recentEvents: [],
                 });
+                setLoading(false);
                 return;
             }
 
-            // Calculate unique users
+            // Calculate unique users and sessions
             const uniqueUsers = new Set(allEvents.map(e => e.user_agent)).size;
+            const uniqueSessions = new Set(allEvents.filter(e => e.session_id).map(e => e.session_id)).size;
 
             // Calculate page views by URL
             const pageViewsMap = {};
@@ -60,7 +78,7 @@ const UserAnalytics = () => {
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 5);
 
-            // Calculate demographics (language + timezone)
+            // Calculate demographics
             const demographicsMap = {};
             allEvents.forEach(event => {
                 const key = `${event.language || 'Unknown'} - ${event.timezone || 'Unknown'}`;
@@ -83,12 +101,48 @@ const UserAnalytics = () => {
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 5);
 
+            // Calculate device breakdown
+            const deviceMap = {};
+            allEvents.forEach(event => {
+                const device = event.device_type || 'Unknown';
+                deviceMap[device] = (deviceMap[device] || 0) + 1;
+            });
+            const deviceBreakdown = Object.entries(deviceMap)
+                .map(([device, count]) => ({ device, count }))
+                .sort((a, b) => b.count - a.count);
+
+            // Calculate browser breakdown
+            const browserMap = {};
+            allEvents.forEach(event => {
+                const browser = event.browser || 'Unknown';
+                browserMap[browser] = (browserMap[browser] || 0) + 1;
+            });
+            const browserBreakdown = Object.entries(browserMap)
+                .map(([browser, count]) => ({ browser, count }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 5);
+
+            // Calculate bounce rate (sessions with only 1 page view)
+            const sessionPageCounts = {};
+            allEvents.forEach(event => {
+                if (event.session_id) {
+                    sessionPageCounts[event.session_id] = (sessionPageCounts[event.session_id] || 0) + 1;
+                }
+            });
+            const singlePageSessions = Object.values(sessionPageCounts).filter(count => count === 1).length;
+            const bounceRate = uniqueSessions > 0 ? ((singlePageSessions / uniqueSessions) * 100).toFixed(1) : 0;
+
             setAnalytics({
                 totalUsers: uniqueUsers,
+                totalSessions: uniqueSessions,
                 totalPageViews: allEvents.length,
+                avgSessionDuration: 0, // Would need timestamp tracking for accurate calculation
+                bounceRate,
                 topPages,
                 demographics,
                 referrers,
+                deviceBreakdown,
+                browserBreakdown,
                 recentEvents: allEvents.slice(0, 10),
             });
         } catch (error) {
@@ -105,6 +159,15 @@ const UserAnalytics = () => {
         }
     };
 
+    const getDeviceIcon = (device) => {
+        switch (device.toLowerCase()) {
+            case 'mobile': return <Smartphone size={20} className="text-blue-600" />;
+            case 'tablet': return <Tablet size={20} className="text-purple-600" />;
+            case 'desktop': return <Monitor size={20} className="text-green-600" />;
+            default: return <Monitor size={20} className="text-gray-600" />;
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-100">
             {/* Header */}
@@ -112,9 +175,21 @@ const UserAnalytics = () => {
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">User Analytics</h1>
-                        <p className="text-sm text-gray-600">Cookie tracking & user behavior insights</p>
+                        <p className="text-sm text-gray-600">Advanced cookie tracking & user behavior insights</p>
                     </div>
                     <div className="flex items-center gap-3">
+                        {/* Date Range Filter */}
+                        <select
+                            value={dateRange}
+                            onChange={(e) => setDateRange(e.target.value)}
+                            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                            <option value="1">Last 24 hours</option>
+                            <option value="7">Last 7 days</option>
+                            <option value="30">Last 30 days</option>
+                            <option value="90">Last 90 days</option>
+                            <option value="365">Last year</option>
+                        </select>
                         <button
                             onClick={loadAnalytics}
                             className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium"
@@ -149,7 +224,7 @@ const UserAnalytics = () => {
                 ) : (
                     <>
                         {/* Stats Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="bg-blue-100 p-3 rounded-lg">
@@ -158,6 +233,16 @@ const UserAnalytics = () => {
                                 </div>
                                 <h3 className="text-gray-600 text-sm font-medium mb-1">Total Users</h3>
                                 <p className="text-3xl font-bold text-gray-900">{analytics.totalUsers}</p>
+                            </div>
+
+                            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="bg-purple-100 p-3 rounded-lg">
+                                        <Clock className="text-purple-600" size={24} />
+                                    </div>
+                                </div>
+                                <h3 className="text-gray-600 text-sm font-medium mb-1">Sessions</h3>
+                                <p className="text-3xl font-bold text-gray-900">{analytics.totalSessions}</p>
                             </div>
 
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
@@ -172,28 +257,81 @@ const UserAnalytics = () => {
 
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                                 <div className="flex items-center justify-between mb-4">
-                                    <div className="bg-purple-100 p-3 rounded-lg">
-                                        <Globe className="text-purple-600" size={24} />
-                                    </div>
-                                </div>
-                                <h3 className="text-gray-600 text-sm font-medium mb-1">Traffic Sources</h3>
-                                <p className="text-3xl font-bold text-gray-900">{analytics.referrers.length}</p>
-                            </div>
-
-                            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                                <div className="flex items-center justify-between mb-4">
                                     <div className="bg-orange-100 p-3 rounded-lg">
                                         <TrendingUp className="text-orange-600" size={24} />
                                     </div>
                                 </div>
-                                <h3 className="text-gray-600 text-sm font-medium mb-1">Avg. Pages/User</h3>
+                                <h3 className="text-gray-600 text-sm font-medium mb-1">Avg. Pages/Session</h3>
                                 <p className="text-3xl font-bold text-gray-900">
-                                    {analytics.totalUsers > 0 ? (analytics.totalPageViews / analytics.totalUsers).toFixed(1) : 0}
+                                    {analytics.totalSessions > 0 ? (analytics.totalPageViews / analytics.totalSessions).toFixed(1) : 0}
                                 </p>
+                            </div>
+
+                            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="bg-red-100 p-3 rounded-lg">
+                                        <BarChart3 className="text-red-600" size={24} />
+                                    </div>
+                                </div>
+                                <h3 className="text-gray-600 text-sm font-medium mb-1">Bounce Rate</h3>
+                                <p className="text-3xl font-bold text-gray-900">{analytics.bounceRate}%</p>
                             </div>
                         </div>
 
-                        {/* Data Tables */}
+                        {/* Device & Browser Breakdown */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                            {/* Device Breakdown */}
+                            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                                <h3 className="text-lg font-bold text-gray-900 mb-4">Device Breakdown</h3>
+                                {analytics.deviceBreakdown.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {analytics.deviceBreakdown.map((item, index) => {
+                                            const percentage = ((item.count / analytics.totalPageViews) * 100).toFixed(1);
+                                            return (
+                                                <div key={index}>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center gap-2">
+                                                            {getDeviceIcon(item.device)}
+                                                            <span className="text-gray-700 font-medium capitalize">{item.device}</span>
+                                                        </div>
+                                                        <span className="text-gray-900 font-semibold">{item.count} ({percentage}%)</span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                                        <div
+                                                            className="bg-primary h-2 rounded-full transition-all duration-300"
+                                                            style={{ width: `${percentage}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 text-center py-8">No device data yet</p>
+                                )}
+                            </div>
+
+                            {/* Browser Breakdown */}
+                            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                                <h3 className="text-lg font-bold text-gray-900 mb-4">Browser Breakdown</h3>
+                                {analytics.browserBreakdown.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {analytics.browserBreakdown.map((item, index) => (
+                                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                                <span className="text-gray-700 font-medium">{item.browser}</span>
+                                                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
+                                                    {item.count} visits
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 text-center py-8">No browser data yet</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Top Pages & Demographics */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                             {/* Top Pages */}
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
@@ -263,9 +401,9 @@ const UserAnalytics = () => {
                                             <tr>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Page</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Language</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resolution</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Platform</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Device</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Browser</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
@@ -275,9 +413,14 @@ const UserAnalytics = () => {
                                                         {new Date(event.created_at).toLocaleString()}
                                                     </td>
                                                     <td className="px-4 py-3 text-sm text-gray-900 font-medium">{event.page_url}</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-700">{event.language}</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-700">{event.screen_resolution}</td>
-                                                    <td className="px-4 py-3 text-sm text-gray-700">{event.platform}</td>
+                                                    <td className="px-4 py-3 text-sm">
+                                                        <span className="inline-flex items-center gap-1 capitalize">
+                                                            {getDeviceIcon(event.device_type || 'unknown')}
+                                                            {event.device_type || 'Unknown'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-sm text-gray-700">{event.browser || 'Unknown'}</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-700">{event.timezone || 'Unknown'}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
