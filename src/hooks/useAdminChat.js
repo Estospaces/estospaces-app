@@ -254,8 +254,12 @@ const useAdminChat = () => {
 
             if (error) throw error;
 
-            // Optimistic update
-            setConversations(prev => prev.filter(c => c.id !== conversationId));
+            // Optimistic update - update status to 'archived' instead of removing
+            setConversations(prev =>
+                prev.map(c => c.id === conversationId ? { ...c, status: 'archived' } : c)
+            );
+
+            // Clear selection if the archived conversation was selected
             if (selectedConversation?.id === conversationId) {
                 setSelectedConversation(null);
                 setMessages([]); // Clear messages when archiving the selected conversation
