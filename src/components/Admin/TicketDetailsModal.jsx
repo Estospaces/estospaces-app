@@ -1,12 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 
 const TicketDetailsModal = ({ ticket, isOpen, onClose, onSave }) => {
-    const [title, setTitle] = useState(ticket?.title || '');
-    const [description, setDescription] = useState(ticket?.description || '');
-    const [priority, setPriority] = useState(ticket?.priority || 'medium');
-    const [status, setStatus] = useState(ticket?.status || 'open');
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [priority, setPriority] = useState('medium');
+    const [status, setStatus] = useState('open');
     const [loading, setLoading] = useState(false);
+
+    // Update form fields when ticket changes
+    useEffect(() => {
+        if (ticket) {
+            setTitle(ticket.title || '');
+            setDescription(ticket.description || '');
+            setPriority(ticket.priority || 'medium');
+            setStatus(ticket.status || 'open');
+        }
+    }, [ticket]);
 
     if (!isOpen || !ticket) return null;
 
