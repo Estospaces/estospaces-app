@@ -225,6 +225,66 @@ const useAdminChat = () => {
         loadConversations();
     }, [loadConversations]);
 
+    // Archive a conversation
+    const archiveConversation = async (conversationId) => {
+        if (!supabase) return;
+        try {
+            const { error } = await supabase
+                .from('conversations')
+                .update({ status: 'archived' })
+                .eq('id', conversationId);
+
+            if (error) throw error;
+
+            // Optimistic update
+            setConversations(prev => prev.filter(c => c.id !== conversationId));
+            if (selectedConversation?.id === conversationId) {
+                setSelectedConversation(null);
+            }
+        } catch (e) {
+            console.error('Error archiving conversation:', e);
+            setError(e.message);
+        }
+    };
+
+    // Create a ticket for a conversation
+    const createTicket = async (conversationId, ticketData) => {
+        if (!supabase) return;
+        try {
+            const { data, error } = await supabase
+                .from('tickets')
+                .insert([{
+                    conversation_id: conversationId,
+                    ...ticketData,
+                    status: 'open'
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        } catch (e) {
+            console.error('Error creating ticket:', e);
+            throw e;
+        }
+    };
+
+    // Close a ticket
+    const closeTicket = async (ticketId) => {
+        if (!supabase) return;
+        try {
+            const { error } = await supabase
+                .from('tickets')
+                .update({ status: 'closed' })
+                .eq('id', ticketId);
+
+            if (error) throw error;
+        } catch (e) {
+            console.error('Error closing ticket:', e);
+            throw e;
+        }
+    };
+
     return {
         conversations,
         selectedConversation,
@@ -234,6 +294,9 @@ const useAdminChat = () => {
         selectConversation,
         sendAdminMessage,
         refreshConversations: loadConversations,
+        archiveConversation,
+        createTicket,
+        closeTicket
     };
 };
 

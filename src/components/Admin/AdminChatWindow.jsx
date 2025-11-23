@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Send, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
-const AdminChatWindow = ({ conversation, messages, onSendMessage, loading }) => {
+const AdminChatWindow = ({ conversation, messages, onSendMessage, loading, onArchive, onCreateTicket, onCloseTicket }) => {
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef(null);
 
@@ -33,11 +33,61 @@ const AdminChatWindow = ({ conversation, messages, onSendMessage, loading }) => 
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="bg-gradient-to-r from-primary to-orange-600 text-white p-4 shadow-md">
-                <h2 className="font-semibold text-lg">{conversation.visitor_name || 'Anonymous Visitor'}</h2>
-                {conversation.visitor_email && (
-                    <p className="text-sm text-orange-100">{conversation.visitor_email}</p>
-                )}
+            <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm z-10">
+                <div>
+                    <h2 className="font-bold text-lg text-gray-900 flex items-center gap-2">
+                        {conversation.visitor_name || 'Anonymous Visitor'}
+                        {conversation.status === 'archived' && (
+                            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">Archived</span>
+                        )}
+                    </h2>
+                    {conversation.visitor_email && (
+                        <p className="text-sm text-gray-500">{conversation.visitor_email}</p>
+                    )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                    {/* Ticket Status Badge */}
+                    {conversation.ticket && (
+                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium mr-2
+                            ${conversation.ticket.status === 'open' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-green-50 text-green-700 border border-green-100'}
+                        `}>
+                            <span>Ticket #{conversation.ticket.id.substring(0, 4)}</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                            <span className="capitalize">{conversation.ticket.status}</span>
+                        </div>
+                    )}
+
+                    {/* Actions */}
+                    {conversation.status !== 'archived' && (
+                        <>
+                            {(!conversation.ticket || conversation.ticket.status === 'closed') && (
+                                <button
+                                    onClick={onCreateTicket}
+                                    className="px-3 py-1.5 text-sm font-medium text-primary bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
+                                >
+                                    Create Ticket
+                                </button>
+                            )}
+
+                            {conversation.ticket?.status === 'open' && (
+                                <button
+                                    onClick={() => onCloseTicket(conversation.ticket.id)}
+                                    className="px-3 py-1.5 text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+                                >
+                                    Close Ticket
+                                </button>
+                            )}
+
+                            <button
+                                onClick={() => onArchive(conversation.id)}
+                                className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                Archive
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Messages */}
@@ -55,8 +105,8 @@ const AdminChatWindow = ({ conversation, messages, onSendMessage, loading }) => 
                             >
                                 <div
                                     className={`max-w-[70%] rounded-2xl px-4 py-2 ${msg.sender_type === 'admin'
-                                            ? 'bg-gradient-to-r from-primary to-orange-600 text-white'
-                                            : 'bg-white border border-gray-200 text-gray-900'
+                                        ? 'bg-gradient-to-r from-primary to-orange-600 text-white'
+                                        : 'bg-white border border-gray-200 text-gray-900'
                                         }`}
                                 >
                                     <p className="text-sm mb-1">{msg.message}</p>
