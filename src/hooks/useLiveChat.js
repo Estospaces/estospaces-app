@@ -79,6 +79,7 @@ const useLiveChat = () => {
                         visitor_email: email,
                     },
                 ])
+                .select()
                 .single();
             if (insertError) {
                 // Duplicate key error (visitor_id already exists)
@@ -105,8 +106,8 @@ const useLiveChat = () => {
                         conversation_id: data.id,
                         sender_type: 'admin',
                         message: welcomeMessage,
-                    }]);
-                }, 500); // 500ms delay to ensure subscription is ready
+                    }]).select();
+                }, 1000); // 1 second delay to ensure subscription is ready
             }
         } catch (e) {
             setError(e.message || 'Failed to start conversation');
