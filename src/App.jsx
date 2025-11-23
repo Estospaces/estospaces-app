@@ -7,6 +7,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import CookiePolicy from './pages/CookiePolicy';
 import AdminLogin from './pages/AdminLogin';
 import AdminChatDashboard from './pages/AdminChatDashboard';
+import UserAnalytics from './pages/UserAnalytics';
 import ProtectedRoute from './components/Admin/ProtectedRoute';
 import ChatWidget from './components/LiveChat/ChatWidget';
 import CookieConsent from './components/CookieConsent';
@@ -42,6 +43,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminChatDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/user-analytics"
+            element={
+              <ProtectedRoute>
+                <UserAnalytics />
               </ProtectedRoute>
             }
           />
