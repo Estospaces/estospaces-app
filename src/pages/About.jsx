@@ -4,38 +4,7 @@ import Footer from '../components/Footer';
 import { Linkedin, Twitter, Globe, Target, Heart, Zap } from 'lucide-react';
 
 const About = () => {
-    const team = [
-        {
-            name: 'Yashwanth Manuwada',
-            role: 'Co-Founder',
-            bio: 'Visionary leader passionate about transforming the real estate landscape through technology and trust.',
-            image: 'https://ui-avatars.com/api/?name=Yashwanth+Manuwada&background=f97316&color=fff&size=256',
-            socials: {
-                linkedin: '#',
-                twitter: '#'
-            }
-        },
-        {
-            name: 'Siranjeevi',
-            role: 'Co-Founder',
-            bio: 'Driving operational excellence and strategic growth to build a seamless property experience for everyone.',
-            image: 'https://ui-avatars.com/api/?name=Siranjeevi&background=f97316&color=fff&size=256',
-            socials: {
-                linkedin: '#',
-                twitter: '#'
-            }
-        },
-        {
-            name: 'Prajole',
-            role: 'CTO',
-            bio: 'Tech innovator architecting the future of virtual property tours and secure digital transactions.',
-            image: 'https://ui-avatars.com/api/?name=Prajole&background=0f172a&color=fff&size=256',
-            socials: {
-                linkedin: '#',
-                twitter: '#'
-            }
-        }
-    ];
+    const team = [];
 
     const values = [
         {
