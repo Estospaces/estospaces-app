@@ -57,12 +57,8 @@ const Navbar = () => {
 
                     {/* Actions */}
                     <div className="hidden md:flex items-center space-x-4">
-                        <button className={`px-6 py-2 rounded-full font-medium border-2 transition-all duration-1000 ${isScrolled ? 'border-white text-white hover:bg-white hover:text-primary' : 'border-white text-white hover:bg-white hover:text-secondary'}`}>
-                            Login
-                        </button>
-                        <button className={`px-6 py-2 rounded-full font-medium transition-all duration-1000 flex items-center gap-2 shadow-lg hover:shadow-xl ${isScrolled ? 'bg-white text-primary hover:bg-gray-100' : 'bg-primary text-white hover:bg-opacity-90'}`}>
-                            <User size={18} />
-                            Sign Up
+                        <button className={`px-6 py-2 rounded-full font-medium transition-all duration-1000 flex items-center gap-2 shadow-lg hover:shadow-xl cursor-default ${isScrolled ? 'bg-white text-primary' : 'bg-primary text-white'}`}>
+                            Coming Soon
                         </button>
                     </div>
 
@@ -88,12 +84,8 @@ const Navbar = () => {
                                 {item}
                             </a>
                         ))}
-                        <button className="w-full px-6 py-2 rounded-full font-medium border-2 border-secondary text-secondary hover:bg-secondary hover:text-white transition-all">
-                            Login
-                        </button>
-                        <button className="bg-primary text-white px-6 py-2 rounded-full font-medium w-full flex items-center justify-center gap-2">
-                            <User size={18} />
-                            Sign Up
+                        <button className="bg-primary text-white px-6 py-2 rounded-full font-medium w-full flex items-center justify-center gap-2 cursor-default">
+                            Coming Soon
                         </button>
                     </div>
                 )}
